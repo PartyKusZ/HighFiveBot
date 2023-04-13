@@ -7,11 +7,17 @@ colcon build
 source install/setup.bash
 ```
 
-# Run
-Odpal symulację
+# Bez moveita
+Odpal symulację bez moveita
 ```bash
-ros2 launch ur_simulation_gazebo ur_sim_control.launch.py
+ros2 launch ur_simulation_gazebo ur_sim_control.launch.py ur_type:="ur3"
 ```
+
+# Z moveitem
+```bash
+LC_NUMERIC=en_US.UTF-8 ros2 launch ur_simulation_gazebo ur_sim_moveit.launch.py ur_type:="ur3"
+```
+
 # Test
 W osobnym terminalu odpal test czy działa trajectory controller
 ```bash
