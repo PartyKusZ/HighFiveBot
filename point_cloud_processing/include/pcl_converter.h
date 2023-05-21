@@ -8,6 +8,7 @@
 
 class PCLConverter : public rclcpp::Node {
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud2_sub_;
+    bool ready;
 
     void point_cloud2_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
 
