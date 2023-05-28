@@ -26,8 +26,8 @@ bool show_keypoints_ (false);
 bool show_correspondences_ (false);
 bool use_cloud_resolution_ (false);
 bool use_hough_ (true);
-float model_ss_ (1);
-float scene_ss_ (0.03f);
+float model_ss_ (0.01f);
+float scene_ss_ (0.01f);
 float rf_rad_ (0.015f);
 float descr_rad_ (0.02f);
 float cg_size_ (0.01f);
@@ -386,7 +386,7 @@ main (int argc, char *argv[])
     viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "off_scene_model_keypoints");
   }
 
-  for (std::size_t i = 0; i < rototranslations.size (); ++i)
+ for (std::size_t i = 0; i < rototranslations.size (); ++i)
   {
     pcl::PointCloud<PointType>::Ptr rotated_model (new pcl::PointCloud<PointType> ());
     pcl::transformPointCloud (*model, *rotated_model, rototranslations[i]);
@@ -412,10 +412,12 @@ main (int argc, char *argv[])
     }
   }
 
-  while (!viewer.wasStopped ())
+  /*while (!viewer.wasStopped ())
   {
     viewer.spinOnce ();
-  }
+  }*/
+
+  viewer.spin();
 
   return (0);
 }
