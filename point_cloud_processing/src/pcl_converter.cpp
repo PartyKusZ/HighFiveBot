@@ -41,7 +41,7 @@ void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::Sh
         pcl::io::savePCDFileASCII("hand_ascii.pcd", *good_cloud);
         RCLCPP_INFO(this->get_logger(), "PCD file saved");*/
 
-        for(size_t i=0; i<pcl_cloud->points.size(); ++i) {
+        /*for(size_t i=0; i<pcl_cloud->points.size(); ++i) {
 
             if(std::isfinite(pcl_cloud->points[i].x) && std::isfinite(pcl_cloud->points[i].y) && std::isfinite(pcl_cloud->points[i].z)) {
                 good_cloud->points.push_back(pcl_cloud->points[i]);
@@ -49,10 +49,10 @@ void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::Sh
         }
 
         good_cloud->height = 1;
-        good_cloud->width = good_cloud->points.size();
+        good_cloud->width = good_cloud->points.size();*/
 
         RCLCPP_INFO(this->get_logger(), "saving PCD file...");
-        pcl::io::savePCDFileBinary("scene_3_hands_bin.pcd", *good_cloud);
+        pcl::io::savePCDFileBinary("scene_3_hands_bin.pcd", *pcl_cloud);
         RCLCPP_INFO(this->get_logger(), "PCD file saved");
 
         ready = true;

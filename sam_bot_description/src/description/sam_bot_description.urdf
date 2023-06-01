@@ -61,6 +61,8 @@
       <frame_name>camera_depth_frame</frame_name>
       <pointCloudCutoff>0.5</pointCloudCutoff>
       <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+      <min_depth>0.05</min_depth>
+      <max_depth>3.0</max_depth>
       <distortionK1>0</distortionK1>
       <distortionK2>0</distortionK2>
       <distortionK3>0</distortionK3>

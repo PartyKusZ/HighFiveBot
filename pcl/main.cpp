@@ -26,7 +26,7 @@ bool show_keypoints_ (false);
 bool show_correspondences_ (false);
 bool use_cloud_resolution_ (false);
 bool use_hough_ (true);
-float model_ss_ (0.01f);
+float model_ss_ (0.005f);
 float scene_ss_ (0.01f);
 float rf_rad_ (0.015f);
 float descr_rad_ (0.02f);
