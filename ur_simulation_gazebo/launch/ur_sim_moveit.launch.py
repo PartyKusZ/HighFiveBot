@@ -33,7 +33,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, Opaq
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
-
+from launch_ros.actions import Node
 
 def launch_setup(context, *args, **kwargs):
 
@@ -61,6 +61,7 @@ def launch_setup(context, *args, **kwargs):
             "description_package": description_package,
             "description_file": description_file,
             "prefix": prefix,
+            "use_sim_time": "true",
             "launch_rviz": "false",
         }.items(),
     )
