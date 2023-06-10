@@ -2,6 +2,8 @@
 
 PCLConverter::PCLConverter() : Node("pcl_converter"), busy{false}, model(new pcl::PointCloud<PointType>()) {
 
+    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
     pcl::io::loadPCDFile("../pcl/hand_bin.pcd", *model);
 
     point_cloud2_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -88,6 +90,47 @@ void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::Sh
     }
 
     busy = false;
+
+    if(transforms.size()==0) {
+        return;
+    }
+
+    Transform hand = *std::min(transforms.begin(), transforms.end());
+
+    geometry_msgs::msg::TransformStamped t;
+
+    t.header.stamp = this->get_clock()->now();
+    t.header.frame_id = "world";
+    t.child_frame_id = "hand";
+
+    t.transform.translation.x = hand.translation(0);
+    t.transform.translation.y = hand.translation(1);
+    t.transform.translation.z = hand.translation(2);
+
+    double roll, pitch, yaw;
+
+    tf2::Matrix3x3 rot;
+    rot.setValue(
+        hand.rotation(0, 0),
+        hand.rotation(0, 1),
+        hand.rotation(0, 2),
+        hand.rotation(1, 0),
+        hand.rotation(1, 1),
+        hand.rotation(1, 2),
+        hand.rotation(2, 0),
+        hand.rotation(2, 1),
+        hand.rotation(2, 2)
+    );
+    rot.getRPY(roll, pitch, yaw);
+
+    tf2::Quaternion q;
+    q.setRPY(roll, pitch, yaw);
+    t.transform.rotation.x = q.x();
+    t.transform.rotation.y = q.y();
+    t.transform.rotation.z = q.z();
+    t.transform.rotation.w = q.w();
+
+    tf_broadcaster_->sendTransform(t);
 }
 
 std::vector<PCLConverter::Transform> PCLConverter::recognize(pcl::PointCloud<PointType>::Ptr model, pcl::PointCloud<PointType>::Ptr scene) {
