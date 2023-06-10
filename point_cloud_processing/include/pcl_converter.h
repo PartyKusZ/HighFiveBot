@@ -44,6 +44,8 @@ class PCLConverter : public rclcpp::Node {
     bool busy;
     pcl::PointCloud<PointType>::Ptr model;
 
+    Eigen::Vector3f hand_pos;
+
     struct Transform {
         Eigen::Matrix3f rotation;
         Eigen::Vector3f translation;

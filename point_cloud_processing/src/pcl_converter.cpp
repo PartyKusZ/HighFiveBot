@@ -6,6 +6,22 @@ PCLConverter::PCLConverter() : Node("pcl_converter"), busy{false}, model(new pcl
 
     pcl::io::loadPCDFile("../pcl/hand_bin.pcd", *model);
 
+    hand_pos(0) = 0;
+    hand_pos(1) = 0;
+    hand_pos(2) = 0;
+
+    for(size_t i=0; i<model->points.size(); ++i) {
+        hand_pos(0) +=model->points[i].x;
+        hand_pos(1) +=model->points[i].y;
+        hand_pos(2) +=model->points[i].z;
+    }
+
+    hand_pos(0) /=model->points.size();
+    hand_pos(1) /=model->points.size();
+    hand_pos(2) /=model->points.size();
+
+    hand_pos(0) -=0.1;
+
     point_cloud2_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         "/depth_camera/points",
         10,
@@ -100,14 +116,14 @@ void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::Sh
     geometry_msgs::msg::TransformStamped t;
 
     t.header.stamp = this->get_clock()->now();
-    t.header.frame_id = "world";
+    t.header.frame_id = "camera_link";
     t.child_frame_id = "hand";
 
-    t.transform.translation.x = hand.translation(0);
-    t.transform.translation.y = hand.translation(1);
-    t.transform.translation.z = hand.translation(2);
+    t.transform.translation.x = +(hand.translation(2) + hand_pos(2));
+    t.transform.translation.y = -(hand.translation(0) + hand_pos(0));
+    t.transform.translation.z = -(hand.translation(1) + hand_pos(1));
 
-    double roll, pitch, yaw;
+    /*double roll, pitch, yaw;
 
     tf2::Matrix3x3 rot;
     rot.setValue(
@@ -128,7 +144,7 @@ void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::Sh
     t.transform.rotation.x = q.x();
     t.transform.rotation.y = q.y();
     t.transform.rotation.z = q.z();
-    t.transform.rotation.w = q.w();
+    t.transform.rotation.w = q.w();*/
 
     tf_broadcaster_->sendTransform(t);
 }
