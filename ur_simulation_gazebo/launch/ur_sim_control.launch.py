@@ -151,7 +151,7 @@ def launch_setup(context, *args, **kwargs):
         PythonLaunchDescriptionSource(
             [FindPackageShare("gazebo_ros"), "/launch", "/gazebo.launch.py"]
         ),
-        launch_arguments={'world': '../world_with_hand.world'}.items()
+        launch_arguments={'world': '../world_with_hand.sdf'}.items()
     )
 
     # Spawn robot
