@@ -25,6 +25,8 @@
 #include <pcl/common/transforms.h>
 #include <pcl/console/parse.h>
 #include <algorithm>
+#include <thread>
+#include <chrono>
 
 class PCLConverter : public rclcpp::Node {
     using PointType = pcl::PointXYZ;
@@ -39,11 +41,6 @@ class PCLConverter : public rclcpp::Node {
     static constexpr float cg_size_ = 0.01f;
     static constexpr float cg_thresh_ = 5.0f;
 
-    rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud2_sub_;
-    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    bool busy;
-    pcl::PointCloud<PointType>::Ptr model;
-
     struct Transform {
         Eigen::Matrix3f rotation;
         Eigen::Vector3f translation;
@@ -53,8 +50,19 @@ class PCLConverter : public rclcpp::Node {
         }
     };
 
+    rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud2_sub_;
+    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    bool busy;
+    pcl::PointCloud<PointType>::Ptr model;
+    rclcpp::TimerBase::SharedPtr timer;
+    bool ready;
+    Transform hand;
+
     void save_point_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::string name);
     void point_cloud2_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
+
+    void compute(pcl::PointCloud<PointType>::Ptr scene);
+    void timer_callback();
     static std::vector<Transform> recognize(pcl::PointCloud<PointType>::Ptr model, pcl::PointCloud<PointType>::Ptr scene);
 
 public:

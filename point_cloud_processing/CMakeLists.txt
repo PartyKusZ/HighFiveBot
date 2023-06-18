@@ -33,7 +33,7 @@ target_include_directories(recognise PRIVATE
 	"include"
 )
 
-target_link_libraries (recognise ${PCL_LIBRARIES})
+target_link_libraries (recognise ${PCL_LIBRARIES} pthread)
 
 ament_target_dependencies(recognise
 	rclcpp

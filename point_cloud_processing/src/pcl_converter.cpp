@@ -1,6 +1,6 @@
 #include "pcl_converter.h"
 
-PCLConverter::PCLConverter() : Node("pcl_converter"), busy{false}, model(new pcl::PointCloud<PointType>()) {
+PCLConverter::PCLConverter() : Node("pcl_converter"), busy{false}, model(new pcl::PointCloud<PointType>()), ready{false} {
 
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
@@ -33,6 +33,10 @@ PCLConverter::PCLConverter() : Node("pcl_converter"), busy{false}, model(new pcl
         10,
         std::bind(&PCLConverter::point_cloud2_callback, this, std::placeholders::_1)
     );
+
+    using namespace std::chrono_literals;
+
+    timer = this->create_wall_timer(100ms, std::bind(&PCLConverter::timer_callback, this));
 }
 
 void PCLConverter::save_point_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::string name) {
@@ -82,19 +86,12 @@ void PCLConverter::save_point_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, s
     }
 }
 
-void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-
-    fromROSMsg(*msg, *pcl_cloud);
-
-    if(busy) {
-        return;
-    }
-
+void PCLConverter::compute(pcl::PointCloud<PointType>::Ptr scene) {
     busy = true;
 
-    // coś długiego
-    std::vector<Transform> transforms = recognize(model, pcl_cloud);
+    const std::vector<Transform> transforms = recognize(model, scene);
+
+    busy = false;
 
     std::cout << "Model instances found: " << transforms.size () << std::endl;
     for (std::size_t i = 0; i < transforms.size (); ++i) {
@@ -103,7 +100,6 @@ void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::Sh
         Eigen::Matrix3f rotation = transforms[i].rotation;
         Eigen::Vector3f translation = transforms[i].translation;
 
-        RCLCPP_INFO(this->get_logger(), "\n");
         RCLCPP_INFO(this->get_logger(), "            | %6.3f %6.3f %6.3f |", rotation (0,0), rotation (0,1), rotation (0,2));
         RCLCPP_INFO(this->get_logger(), "        R = | %6.3f %6.3f %6.3f |", rotation (1,0), rotation (1,1), rotation (1,2));
         RCLCPP_INFO(this->get_logger(), "            | %6.3f %6.3f %6.3f |", rotation (2,0), rotation (2,1), rotation (2,2));
@@ -111,13 +107,20 @@ void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::Sh
         RCLCPP_INFO(this->get_logger(), "        t = < %0.3f, %0.3f, %0.3f >", translation (0), translation (1), translation (2));
     }
 
-    busy = false;
-
     if(transforms.size()==0) {
         return;
     }
 
-    Transform hand = *std::min(transforms.begin(), transforms.end());
+    hand = *std::min(transforms.begin(), transforms.end());
+    ready = true;
+}
+
+void PCLConverter::timer_callback() {
+    if(!ready) {
+        return;
+    }
+
+    ready = false;
 
     geometry_msgs::msg::TransformStamped t;
 
@@ -153,6 +156,20 @@ void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::Sh
     t.transform.rotation.w = q.w();
 
     tf_broadcaster_->sendTransform(t);
+}
+
+void PCLConverter::point_cloud2_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+    fromROSMsg(*msg, *pcl_cloud);
+
+    if(busy) {
+        return;
+    }
+
+    std::thread thread(std::bind(&PCLConverter::compute, this, std::placeholders::_1), pcl_cloud);
+
+    thread.detach();
 }
 
 std::vector<PCLConverter::Transform> PCLConverter::recognize(pcl::PointCloud<PointType>::Ptr model, pcl::PointCloud<PointType>::Ptr scene) {
