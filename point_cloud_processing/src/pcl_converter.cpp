@@ -89,7 +89,18 @@ void PCLConverter::save_point_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, s
 void PCLConverter::compute(pcl::PointCloud<PointType>::Ptr scene) {
     busy = true;
 
-    const std::vector<Transform> transforms = recognize(model, scene);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr good_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+    for(size_t i=0; i<scene->points.size(); ++i) {
+        if(scene->points[i].y<0.2 && scene->points[i].z<1) {
+            good_cloud->points.push_back(scene->points[i]);
+        }
+    }
+
+    good_cloud->height = 1;
+    good_cloud->width = good_cloud->points.size();
+
+    const std::vector<Transform> transforms = recognize(model, good_cloud);
 
     busy = false;
 
@@ -116,9 +127,9 @@ void PCLConverter::compute(pcl::PointCloud<PointType>::Ptr scene) {
 }
 
 void PCLConverter::timer_callback() {
-    if(!ready) {
-        return;
-    }
+    //if(!ready) {
+    //    return;
+    //}
 
     ready = false;
 
