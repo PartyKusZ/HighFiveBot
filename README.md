@@ -25,8 +25,11 @@ ros2 action send_goal /joint_trajectory_controller/follow_joint_trajectory contr
   trajectory: {
     joint_names: [shoulder_pan_joint, elbow_joint , shoulder_lift_joint, wrist_1_joint,  wrist_2_joint, wrist_3_joint ],
     points: [
-        { positions: [1.0, 0.5, -1.0, 1.0, 0.0, 0.0], time_from_start: { sec: 3, nanosec: 0 } },
+        { positions: [0.0, -1.57, 1.57, -3.14, -1.57, 0.0], time_from_start: { sec: 3, nanosec: 0 } },
     ]
   }
 }"
 ```
+
+ros2 run high_five_bot_driver high_five_bot_driver  --ros-args -p use_sim_time:=True
+ros2 service call /go_to_hand std_srvs/srv/Trigger
