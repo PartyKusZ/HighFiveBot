@@ -1,8 +1,15 @@
+# Prerequirements
+```
+sudo apt install python3-rosdep2
+```
+
 # Build
 Zbuduj sklonowany projekt
 ```bash
 mkdir -p src/
-git clone https://github.com/PartyKusZ/HighFiveBot.git
+git clone https://github.com/PartyKusZ/HighFiveBot.git src/
+rosdep update
+rosdep install --from-paths src -y --ignore-src
 colcon build
 source install/setup.bash
 ```
