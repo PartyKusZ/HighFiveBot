@@ -72,11 +72,11 @@ class GoToHand(Node):
         # self.broadcast()
         self.go_to_hand_flag = False
         from_frame_rel = 'hand'
-        to_frame_rel = 'world'
+        to_frame_rel = 'base'
         try:
             self.transform = self.tf_buffer.lookup_transform(to_frame_rel, from_frame_rel,rclpy.time.Time())
-            self.goal_position[0] = -self.transform.transform.translation.x
-            self.goal_position[1] = -self.transform.transform.translation.y
+            self.goal_position[0] = self.transform.transform.translation.x
+            self.goal_position[1] = self.transform.transform.translation.y
             self.goal_position[2] = self.transform.transform.translation.z
             self.orientation[0] = self.transform.transform.rotation.x
             self.orientation[1] = self.transform.transform.rotation.y
@@ -162,7 +162,7 @@ def main():
     executor_thread.start()
 
     # Get parameters
-    quat_xyzw = [0.0, 0.0, 0.0, 1.0]
+    quat_xyzw = [0.0, 1.0,  0.0, 0.0]
     cartesian = True
     init_position = [0.4, 0.0, 0.2]
 
@@ -174,7 +174,7 @@ def main():
                 f"Moving to {{position: {list(hand_node.get_goal_position())}, quat_xyzw: {list(quat_xyzw)}}}"
             )
             moveit2.move_to_pose(position=hand_node.get_goal_position(),
-                                 quat_xyzw=quat_xyzw, cartesian=cartesian)
+                                 quat_xyzw=hand_node.get_goal_orientation(), cartesian=cartesian)
             moveit2.wait_until_executed()
 
     rclpy.shutdown()
