@@ -4,7 +4,7 @@ PCLConverter::PCLConverter() : Node("pcl_converter"), busy{false}, model(new pcl
 
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-    pcl::io::loadPCDFile("../pcl/hand_bin.pcd", *model);
+    pcl::io::loadPCDFile("src/pcl/hand_bin.pcd", *model);
 
     Eigen::Vector3f hand_center;
 
